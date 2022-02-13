@@ -20,7 +20,7 @@ let package = Package(
   ],
   targets: [
     .target(
-      name: "clash-cli",
+      name: "clash-ctl",
       dependencies: [
         "ClashAPI",
         .product(name: "ArgumentParser", package: "swift-argument-parser"),

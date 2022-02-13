@@ -2,7 +2,7 @@ import ArgumentParser
 import ClashAPI
 import Foundation
 
-struct ClashCli: ParsableCommand {
+struct ClashCtl: ParsableCommand {
 
   static var client: ClashAPIClient!
 
@@ -37,25 +37,25 @@ struct ClashCli: ParsableCommand {
   }
 }
 
-extension ClashCli {
+extension ClashCtl {
 
   struct Version: ParsableCommand {
     func run() throws {
-      let version = try ClashCli.client.eventLoopFuture(GetVersion()).wait().body.get().version
+      let version = try ClashCtl.client.eventLoopFuture(GetVersion()).wait().body.get().version
       print(version)
     }
   }
 
   struct Rule: ParsableCommand {
     func run() throws {
-      let rules = try ClashCli.client.eventLoopFuture(GetRules()).wait().body.get().rules
+      let rules = try ClashCtl.client.eventLoopFuture(GetRules()).wait().body.get().rules
       rules.forEach { print($0) }
     }
   }
 
   struct Connection: ParsableCommand {
     func run() throws {
-      let info = try ClashCli.client.eventLoopFuture(GetConnections()).wait().body.get()
+      let info = try ClashCtl.client.eventLoopFuture(GetConnections()).wait().body.get()
       info.connections.forEach { print($0) }
       print("total down: \(ByteCountFormatter.string(fromByteCount: numericCast(info.downloadTotal), countStyle: .file))")
       print("total up: \(ByteCountFormatter.string(fromByteCount: numericCast(info.uploadTotal), countStyle: .file))")
@@ -64,7 +64,7 @@ extension ClashCli {
 
   struct Traffic: ParsableCommand {
     func run() throws {
-      let task = try ClashCli.client.streamSegmented(GetTraffic(), receiveCompletion: { completion in
+      let task = try ClashCtl.client.streamSegmented(GetTraffic(), receiveCompletion: { completion in
         print("finished: \(completion)")
       }, receiveValue: { result in
         switch result {
@@ -92,7 +92,7 @@ extension ClashCli {
       } else {
         throw ValidationError("invalid UUID: \(id)")
       }
-      let response = try ClashCli.client.eventLoopFutureRaw(req).wait()
+      let response = try ClashCtl.client.eventLoopFutureRaw(req).wait()
       print("status:", response.response.status.code)
     }
   }
@@ -128,11 +128,11 @@ extension ClashCli {
 
     func run() throws {
       if let name = name {
-        let res = try ClashCli.client.eventLoopFuture(GetProxyInfo(name: name)).wait().body.get()
+        let res = try ClashCtl.client.eventLoopFuture(GetProxyInfo(name: name)).wait().body.get()
         logProxy(res, name: name)
       } else {
         print("Get all proxies")
-        let res = try ClashCli.client.eventLoopFuture(GetAllProxies()).wait().body.get()
+        let res = try ClashCtl.client.eventLoopFuture(GetAllProxies()).wait().body.get()
         res.proxies.sorted(by: { l, r in
           if l.value.type == r.value.type {
             return l.key < r.key
@@ -163,7 +163,7 @@ extension ClashCli {
     var url: String
 
     func run() throws {
-      let res = try ClashCli.client.eventLoopFuture(GetProxyDelay(name: name, timeout: timeout, url: url)).wait().body
+      let res = try ClashCtl.client.eventLoopFuture(GetProxyDelay(name: name, timeout: timeout, url: url)).wait().body
       print(res)
     }
   }
@@ -177,10 +177,10 @@ extension ClashCli {
     var selection: String
 
     func run() throws {
-      let response = try ClashCli.client.eventLoopFutureRaw(ChangeSelection(newSelection: selection, groupName: group)).wait()
+      let response = try ClashCtl.client.eventLoopFutureRaw(ChangeSelection(newSelection: selection, groupName: group)).wait()
       print("status:", response.response.status.code)
     }
   }
 }
 
-ClashCli.main()
+ClashCtl.main()

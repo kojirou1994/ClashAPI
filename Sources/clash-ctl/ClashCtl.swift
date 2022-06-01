@@ -2,7 +2,8 @@ import ArgumentParser
 import ClashAPI
 import Foundation
 
-struct ClashCtl: ParsableCommand {
+@main
+struct ClashCtl: AsyncParsableCommand {
 
   static var client: ClashAPIClient!
 
@@ -33,57 +34,60 @@ struct ClashCtl: ParsableCommand {
         Proxy.self,
         Test.self,
         Select.self,
+        Reload.self,
     ])
   }
 }
 
 extension ClashCtl {
 
-  struct Version: ParsableCommand {
-    func run() throws {
-      let version = try ClashCtl.client.eventLoopFuture(GetVersion()).wait().body.get().version
+  struct Version: AsyncParsableCommand {
+    func run() async throws {
+      let version = try await ClashCtl.client.response(GetVersion()).body.get().version
       print(version)
     }
   }
 
-  struct Rule: ParsableCommand {
-    func run() throws {
-      let rules = try ClashCtl.client.eventLoopFuture(GetRules()).wait().body.get().rules
+  struct Rule: AsyncParsableCommand {
+    func run() async throws {
+      let rules = try await ClashCtl.client.response(GetRules()).body.get().rules
       rules.forEach { print($0) }
     }
   }
 
-  struct Connection: ParsableCommand {
-    func run() throws {
-      let info = try ClashCtl.client.eventLoopFuture(GetConnections()).wait().body.get()
+  struct Connection: AsyncParsableCommand {
+    func run() async throws {
+      let info = try await ClashCtl.client.response(GetConnections()).body.get()
       info.connections.forEach { print($0) }
-      print("total down: \(ByteCountFormatter.string(fromByteCount: numericCast(info.downloadTotal), countStyle: .file))")
-      print("total up: \(ByteCountFormatter.string(fromByteCount: numericCast(info.uploadTotal), countStyle: .file))")
+      print("total down: \(byteFormatter.string(fromByteCount: numericCast(info.downloadTotal)))")
+      print("total up: \(byteFormatter.string(fromByteCount: numericCast(info.uploadTotal)))")
     }
   }
 
   struct Traffic: ParsableCommand {
     func run() throws {
-      let task = try ClashCtl.client.streamSegmented(GetTraffic(), receiveCompletion: { completion in
+      _ = try ClashCtl.client.streamSegmented(GetTraffic(), receiveCompletion: { completion in
         print("finished: \(completion)")
+        Self.exit()
       }, receiveValue: { result in
         switch result {
         case .success(let traffic):
-          print("Download: \(ByteCountFormatter.string(fromByteCount: numericCast(traffic.down), countStyle: .file))/s", "Upload: \(ByteCountFormatter.string(fromByteCount: numericCast(traffic.up), countStyle: .file))/s")
+          print("Download: \(byteFormatter.string(fromByteCount: numericCast(traffic.down)))/s", "Upload: \(byteFormatter.string(fromByteCount: numericCast(traffic.up)))/s")
         case .failure(let error):
           print("Decode error: \(error)")
         }
       })
-      try task.wait()
+
+      dispatchMain()
     }
   }
 
-  struct Kill: ParsableCommand {
+  struct Kill: AsyncParsableCommand {
 
     @Argument(help: "connection's UUID or 'all'")
     var id: String
 
-    func run() throws {
+    func run() async throws {
       let req: KillConnection
       if id == "all"{
         req = .all
@@ -92,12 +96,12 @@ extension ClashCtl {
       } else {
         throw ValidationError("invalid UUID: \(id)")
       }
-      let response = try ClashCtl.client.eventLoopFutureRaw(req).wait()
+      let response = try await ClashCtl.client.rawResponse(req)
       print("status:", response.response.status.code)
     }
   }
 
-  struct Proxy: ParsableCommand {
+  struct Proxy: AsyncParsableCommand {
 
     @Flag
     var all: Bool = false
@@ -126,13 +130,13 @@ extension ClashCtl {
       print()
     }
 
-    func run() throws {
+    func run() async throws {
       if let name = name {
-        let res = try ClashCtl.client.eventLoopFuture(GetProxyInfo(name: name)).wait().body.get()
+        let res = try await ClashCtl.client.response(GetProxyInfo(name: name)).body.get()
         logProxy(res, name: name)
       } else {
         print("Get all proxies")
-        let res = try ClashCtl.client.eventLoopFuture(GetAllProxies()).wait().body.get()
+        let res = try await ClashCtl.client.response(GetAllProxies()).body.get()
         res.proxies.sorted(by: { l, r in
           if l.value.type == r.value.type {
             return l.key < r.key
@@ -151,7 +155,7 @@ extension ClashCtl {
     }
   }
 
-  struct Test: ParsableCommand {
+  struct Test: AsyncParsableCommand {
 
     @Argument
     var name: String
@@ -162,13 +166,13 @@ extension ClashCtl {
     @Argument
     var url: String
 
-    func run() throws {
-      let res = try ClashCtl.client.eventLoopFuture(GetProxyDelay(name: name, timeout: timeout, url: url)).wait().body
+    func run() async throws {
+      let res = try await ClashCtl.client.response(GetProxyDelay(name: name, timeout: timeout, url: url)).body
       print(res)
     }
   }
 
-  struct Select: ParsableCommand {
+  struct Select: AsyncParsableCommand {
 
     @Argument
     var group: String
@@ -176,11 +180,21 @@ extension ClashCtl {
     @Argument
     var selection: String
 
-    func run() throws {
-      let response = try ClashCtl.client.eventLoopFutureRaw(ChangeSelection(newSelection: selection, groupName: group)).wait()
+    func run() async throws {
+      let response = try await ClashCtl.client.rawResponse(ChangeSelection(newSelection: selection, groupName: group))
       print("status:", response.response.status.code)
     }
   }
-}
 
-ClashCtl.main()
+  struct Reload: AsyncParsableCommand {
+
+    @Argument
+    var path: String
+
+    func run() async throws {
+      let endpoint = ReloadConfigs(force: false, body: .init(path: path))
+      let response = try await ClashCtl.client.rawResponse(endpoint)
+      try endpoint.validate(networking: ClashCtl.client, response: response)
+    }
+  }
+}

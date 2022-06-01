@@ -1,0 +1,185 @@
+{
+  "pins" : [
+    {
+      "identity" : "anyencodable",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/kojirou1994/AnyEncodable.git",
+      "state" : {
+        "revision" : "7b37d843fca576f78819aa2aecc1fccb8db5fef7",
+        "version" : "0.1.0"
+      }
+    },
+    {
+      "identity" : "async-http-client",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/swift-server/async-http-client.git",
+      "state" : {
+        "revision" : "24425989dadab6d6e4167174791a23d4e2a6d0c3",
+        "version" : "1.10.0"
+      }
+    },
+    {
+      "identity" : "dictionarycoding",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/elegantchaos/DictionaryCoding.git",
+      "state" : {
+        "revision" : "ae19e456bd550fed8f341e5bae4318333c53a5b4",
+        "version" : "1.0.9"
+      }
+    },
+    {
+      "identity" : "kwift",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/kojirou1994/Kwift.git",
+      "state" : {
+        "revision" : "9261a1508b935fe574c2aff29ffc4bbca7a034e8",
+        "version" : "1.0.1"
+      }
+    },
+    {
+      "identity" : "maxminddb",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/kojirou1994/MaxMindDB.git",
+      "state" : {
+        "revision" : "fe8ea83e4d42df74cdcb1fb9a0ee6641c57961a6",
+        "version" : "1.0.3"
+      }
+    },
+    {
+      "identity" : "multipart",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/kojirou1994/Multipart.git",
+      "state" : {
+        "revision" : "72f6875a839774dd3d46a1a72b0cc93e7a3c977d",
+        "version" : "0.2.0"
+      }
+    },
+    {
+      "identity" : "networking",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/kojirou1994/Networking.git",
+      "state" : {
+        "revision" : "9e90c800766ea9c0697e494612837a1c9ea29c9b",
+        "version" : "0.4.1"
+      }
+    },
+    {
+      "identity" : "precondition",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/kojirou1994/Precondition.git",
+      "state" : {
+        "revision" : "8bfd454560f5bfafe9bf0db3e929ef65ba189400",
+        "version" : "1.0.0"
+      }
+    },
+    {
+      "identity" : "proxyinfo",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/kojirou1994/ProxyInfo.git",
+      "state" : {
+        "revision" : "d6e522e9c569a672fe8bd92700b15024ae3bc24d",
+        "version" : "0.0.2"
+      }
+    },
+    {
+      "identity" : "proxyutility",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/kojirou1994/ProxyUtility.git",
+      "state" : {
+        "revision" : "cdd04c37a6c82da3e6bd37ff6880a6e5009947a8",
+        "version" : "0.2.1"
+      }
+    },
+    {
+      "identity" : "swift-argument-parser",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/apple/swift-argument-parser.git",
+      "state" : {
+        "revision" : "f3c9084a71ef4376f2fabbdf1d3d90a49f1fabdb",
+        "version" : "1.1.2"
+      }
+    },
+    {
+      "identity" : "swift-extras-base64",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/swift-extras/swift-extras-base64.git",
+      "state" : {
+        "revision" : "97237cf1bc1feebaeb0febec91c1e1b9e4d839b3",
+        "version" : "0.7.0"
+      }
+    },
+    {
+      "identity" : "swift-log",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/apple/swift-log.git",
+      "state" : {
+        "revision" : "5d66f7ba25daf4f94100e7022febf3c75e37a6c7",
+        "version" : "1.4.2"
+      }
+    },
+    {
+      "identity" : "swift-nio",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/apple/swift-nio.git",
+      "state" : {
+        "revision" : "124119f0bb12384cef35aa041d7c3a686108722d",
+        "version" : "2.40.0"
+      }
+    },
+    {
+      "identity" : "swift-nio-extras",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/apple/swift-nio-extras.git",
+      "state" : {
+        "revision" : "8eea84ec6144167354387ef9244b0939f5852dc8",
+        "version" : "1.11.0"
+      }
+    },
+    {
+      "identity" : "swift-nio-http2",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/apple/swift-nio-http2.git",
+      "state" : {
+        "revision" : "72bcaf607b40d7c51044f65b0f5ed8581a911832",
+        "version" : "1.21.0"
+      }
+    },
+    {
+      "identity" : "swift-nio-ssl",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/apple/swift-nio-ssl.git",
+      "state" : {
+        "revision" : "1750873bce84b4129b5303655cce2c3d35b9ed3a",
+        "version" : "2.19.0"
+      }
+    },
+    {
+      "identity" : "swift-nio-transport-services",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/apple/swift-nio-transport-services.git",
+      "state" : {
+        "revision" : "1a4692acb88156e3da1b0c6732a8a38b2a744166",
+        "version" : "1.12.0"
+      }
+    },
+    {
+      "identity" : "urlfilemanager",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/kojirou1994/URLFileManager.git",
+      "state" : {
+        "revision" : "3472bc7e7b047429fcb1d128467ca5e675ecae72",
+        "version" : "0.1.4"
+      }
+    },
+    {
+      "identity" : "yams",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/jpsim/Yams.git",
+      "state" : {
+        "revision" : "81a65c4069c28011ee432f2858ba0de49b086677",
+        "version" : "3.0.1"
+      }
+    }
+  ],
+  "version" : 2
+}

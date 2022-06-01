@@ -1,7 +1,7 @@
 import Networking
 import Foundation
 
-public struct KillConnection: Endpoint {
+public struct KillConnection: ClashEndpoint {
 
   public static func id(_ id: UUID) -> Self { .init(id: id) }
   public static var all: Self { .init(id: nil) }

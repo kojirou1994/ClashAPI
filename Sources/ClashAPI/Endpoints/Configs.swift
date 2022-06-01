@@ -19,7 +19,7 @@ public struct PatchConfigs: Endpoint {
   public let body: AnyEncodable
 }
 
-public struct ReloadConfigs: Endpoint {
+public struct ReloadConfigs: ClashEndpoint {
   public init(force: Bool, body: RequestBody) {
     self.force = force
     self.body = body

@@ -1,6 +1,6 @@
 import Networking
 
-public struct GetTraffic: Endpoint {
+public struct GetTraffics: Endpoint {
   public init() {}
   
   public var path: String { "/traffic" }

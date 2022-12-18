@@ -2,27 +2,18 @@ import Foundation
 import NIO
 import NIOHTTP1
 import Networking
-import ClashAPI
 
-let byteFormatter: ByteCountFormatter = {
-  let f = ByteCountFormatter()
-  f.countStyle = .file
-  f.allowsNonnumericFormatting = false
-  f.allowedUnits = .useAll.subtracting(.useBytes)
-  return f
-}()
+public struct ClashAPIClient: URLSessionNetworking {
 
-struct ClashAPIClient: URLSessionNetworking {
-
-  let commonHTTPHeaders: HTTPHeaders
-  let urlComponents: URLComponents
-  let jsonDecoder: JSONDecoder = .init()
-  let jsonEncoder: JSONEncoder = .init()
-  let session: URLSession
-  var autoResume: Bool { true }
+  public let commonHTTPHeaders: HTTPHeaders
+  public let urlComponents: URLComponents
+  public let jsonDecoder: JSONDecoder = .init()
+  public let jsonEncoder: JSONEncoder = .init()
+  public let session: URLSession
+  public var autoResume: Bool { true }
   let delegate: URLSessionTaskIndependentDelegate
 
-  init(auth: ClashAuth, tls: Bool) {
+  public init(auth: ClashAuth, tls: Bool) {
     delegate = URLSessionTaskIndependentDelegate()
     session = .init(configuration: .ephemeral, delegate: delegate, delegateQueue: nil)
     var urlComponents = URLComponents()
@@ -57,12 +48,16 @@ extension ClashAPIClient: StreamNetworking {
     }
 
     func urlSession(_ session: URLSession, dataTask: URLSessionDataTask, didReceive data: Data) {
-      receiveValue(data)
+      data.split(separator: UInt8(ascii: "\n")).forEach { line in
+        receiveValue(line)
+      }
     }
   }
 
-  func stream<E>(_ endpoint: E, receiveCompletion: @escaping (Result<Void, Error>) -> Void, receiveValue: @escaping (Data) -> Void) throws -> Task where E : Endpoint {
-    let task = try session.dataTask(with: request(endpoint))
+  public func stream<E>(_ endpoint: E, receiveCompletion: @escaping (Result<Void, Error>) -> Void, receiveValue: @escaping (Data) -> Void) throws -> Task where E : Endpoint {
+    var request = try request(endpoint)
+    request.timeoutInterval = .greatestFiniteMagnitude
+    let task = session.dataTask(with: request)
     delegate.delegates[task] = StreamHandler(receiveCompletion: receiveCompletion, receiveValue: receiveValue)
     if autoResume {
       task.resume()

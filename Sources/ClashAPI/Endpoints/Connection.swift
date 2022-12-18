@@ -21,9 +21,15 @@ public struct GetConnections: Endpoint {
   public var path: String { "/connections" }
 
   public struct ResponseBody: Decodable, Equatable {
+    public init(downloadTotal: Int, uploadTotal: Int, connections: [Connection]) {
+      self.downloadTotal = downloadTotal
+      self.uploadTotal = uploadTotal
+      self.connections = connections
+    }
+
     public let downloadTotal: Int
     public let uploadTotal: Int
-    public let connections: [Connection]
+    public var connections: [Connection]
   }
 }
 

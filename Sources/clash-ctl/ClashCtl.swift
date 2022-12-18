@@ -2,6 +2,14 @@ import ArgumentParser
 import ClashAPI
 import Foundation
 
+let byteFormatter: ByteCountFormatter = {
+  let f = ByteCountFormatter()
+  f.countStyle = .file
+  f.allowsNonnumericFormatting = false
+  f.allowedUnits = .useAll.subtracting(.useBytes)
+  return f
+}()
+
 @main
 struct ClashCtl: AsyncParsableCommand {
 
@@ -30,6 +38,7 @@ struct ClashCtl: AsyncParsableCommand {
         Rule.self,
         Connection.self,
         Traffic.self,
+        Log.self,
         Kill.self,
         Proxy.self,
         Test.self,
@@ -64,21 +73,33 @@ extension ClashCtl {
     }
   }
 
-  struct Traffic: ParsableCommand {
-    func run() throws {
-      _ = try ClashCtl.client.streamSegmented(GetTraffic(), receiveCompletion: { completion in
-        print("finished: \(completion)")
-        Self.exit()
-      }, receiveValue: { result in
-        switch result {
-        case .success(let traffic):
+  struct Traffic: AsyncParsableCommand {
+    func run() async {
+      do {
+        for try await traffic in ClashCtl.client.segmentsStream(GetTraffics()) {
           print("Download: \(byteFormatter.string(fromByteCount: numericCast(traffic.down)))/s", "Upload: \(byteFormatter.string(fromByteCount: numericCast(traffic.up)))/s")
-        case .failure(let error):
-          print("Decode error: \(error)")
         }
-      })
+      } catch {
+        print("Error: \(error)")
+      }
+      print()
+      print("Will reconnect!")
+      print()
+    }
+  }
 
-      dispatchMain()
+  struct Log: AsyncParsableCommand {
+    func run() async throws {
+      do {
+        for try await log in ClashCtl.client.segmentsStream(GetLogs(level: .debug)) {
+          print("\(log.level.rawValue): \(log.payload)")
+        }
+      } catch {
+        print("Error: \(error)")
+      }
+      print()
+      print("Will reconnect!")
+      print()
     }
   }
 
@@ -89,7 +110,7 @@ extension ClashCtl {
 
     func run() async throws {
       let req: KillConnection
-      if id == "all"{
+      if id.lowercased() == "all" {
         req = .all
       } else if let id = UUID(uuidString: id) {
         req = .id(id)

@@ -74,32 +74,36 @@ extension ClashCtl {
   }
 
   struct Traffic: AsyncParsableCommand {
-    func run() async {
-      do {
-        for try await traffic in ClashCtl.client.segmentsStream(GetTraffics()) {
-          print("Download: \(byteFormatter.string(fromByteCount: numericCast(traffic.down)))/s", "Upload: \(byteFormatter.string(fromByteCount: numericCast(traffic.up)))/s")
+    func run() async throws {
+      while true {
+        do {
+          for try await traffic in ClashCtl.client.segmentsStream(GetTraffics()) {
+            print("Download: \(byteFormatter.string(fromByteCount: numericCast(traffic.down)))/s", "Upload: \(byteFormatter.string(fromByteCount: numericCast(traffic.up)))/s")
+          }
+        } catch {
+          print("Error: \(error.localizedDescription)")
         }
-      } catch {
-        print("Error: \(error)")
+        print()
+        print("Wait for reconnect!")
+        try await Task.sleep(for: .seconds(3))
       }
-      print()
-      print("Will reconnect!")
-      print()
     }
   }
 
   struct Log: AsyncParsableCommand {
     func run() async throws {
-      do {
-        for try await log in ClashCtl.client.segmentsStream(GetLogs(level: .debug)) {
-          print("\(log.level.rawValue): \(log.payload)")
+      while true {
+        do {
+          for try await log in ClashCtl.client.segmentsStream(GetLogs(level: .debug)) {
+            print("\(log.level.rawValue): \(log.payload)")
+          }
+        } catch {
+          print("Error: \(error.localizedDescription)")
         }
-      } catch {
-        print("Error: \(error)")
+        print()
+        print("Wait for reconnect!")
+        try await Task.sleep(for: .seconds(3))
       }
-      print()
-      print("Will reconnect!")
-      print()
     }
   }
 

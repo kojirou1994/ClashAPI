@@ -8,9 +8,12 @@ public struct ClashProxyRes: Decodable {
   public let history: [History]
   public let now: String?
   public let type: ProxyType
+  public let udp: Bool
+
   public struct History: Codable {
     public let time: String
     public let delay: Int
+    public let meanDelay: Int
   }
   public enum ProxyType: String, Codable {
     case direct = "Direct"
@@ -22,10 +25,12 @@ public struct ClashProxyRes: Decodable {
     case fallback = "Fallback"
     case vmess = "Vmess"
     case shadowsocksR = "ShadowsocksR"
+    case trojan = "Trojan"
 
     public var isRealProxy: Bool {
       switch self {
-      case .shadowsocks, .shadowsocksR, .vmess, .socks5:
+      case .shadowsocks, .shadowsocksR, .vmess, .socks5,
+          .trojan:
         return true
       default: return false
       }

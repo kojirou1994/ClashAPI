@@ -13,22 +13,24 @@ let byteFormatter: ByteCountFormatter = {
 @main
 struct ClashCtl: AsyncParsableCommand {
 
-  static var client: ClashAPIClient!
+  struct ServerOptions: ParsableArguments {
+    static var client: ClashAPIClient!
 
-  @Option
-  var server: String = "127.0.0.1"
+    @Option
+    var server: String = "127.0.0.1"
 
-  @Option
-  var port: Int
+    @Option
+    var port: Int
 
-  @Option
-  var secret: String = ""
+    @Option
+    var secret: String = ""
 
-  @Flag
-  var tls = false
+    @Flag
+    var tls = false
 
-  func validate() throws {
-    Self.client = .init(auth: ClashAuth(server: server, port: port, secret: secret), tls: tls)
+    func validate() throws {
+      Self.client = .init(auth: ClashAuth(server: server, port: port, secret: secret), tls: tls)
+    }
   }
 
   static var configuration: CommandConfiguration {
@@ -51,22 +53,34 @@ struct ClashCtl: AsyncParsableCommand {
 extension ClashCtl {
 
   struct Version: AsyncParsableCommand {
+
+    @OptionGroup
+    var options: ServerOptions
+
     func run() async throws {
-      let version = try await ClashCtl.client.response(GetVersion()).body.get().version
+      let version = try await ServerOptions.client.response(GetVersion()).body.get().version
       print(version)
     }
   }
 
   struct Rule: AsyncParsableCommand {
+
+    @OptionGroup
+    var options: ServerOptions
+
     func run() async throws {
-      let rules = try await ClashCtl.client.response(GetRules()).body.get().rules
+      let rules = try await ServerOptions.client.response(GetRules()).body.get().rules
       rules.forEach { print($0) }
     }
   }
 
   struct Connection: AsyncParsableCommand {
+
+    @OptionGroup
+    var options: ServerOptions
+
     func run() async throws {
-      let info = try await ClashCtl.client.response(GetConnections()).body.get()
+      let info = try await ServerOptions.client.response(GetConnections()).body.get()
       info.connections.forEach { print($0) }
       print("total down: \(byteFormatter.string(fromByteCount: numericCast(info.downloadTotal)))")
       print("total up: \(byteFormatter.string(fromByteCount: numericCast(info.uploadTotal)))")
@@ -74,10 +88,14 @@ extension ClashCtl {
   }
 
   struct Traffic: AsyncParsableCommand {
+
+    @OptionGroup
+    var options: ServerOptions
+
     func run() async throws {
       while true {
         do {
-          for try await traffic in ClashCtl.client.segmentsStream(GetTraffics()) {
+          for try await traffic in ServerOptions.client.segmentsStream(GetTraffics()) {
             print("Download: \(byteFormatter.string(fromByteCount: numericCast(traffic.down)))/s", "Upload: \(byteFormatter.string(fromByteCount: numericCast(traffic.up)))/s")
           }
         } catch {
@@ -91,10 +109,14 @@ extension ClashCtl {
   }
 
   struct Log: AsyncParsableCommand {
+
+    @OptionGroup
+    var options: ServerOptions
+
     func run() async throws {
       while true {
         do {
-          for try await log in ClashCtl.client.segmentsStream(GetLogs(level: .debug)) {
+          for try await log in ServerOptions.client.segmentsStream(GetLogs(level: .debug)) {
             print("\(log.level.rawValue): \(log.payload)")
           }
         } catch {
@@ -109,6 +131,9 @@ extension ClashCtl {
 
   struct Kill: AsyncParsableCommand {
 
+    @OptionGroup
+    var options: ServerOptions
+
     @Argument(help: "connection's UUID or 'all'")
     var id: String
 
@@ -121,12 +146,15 @@ extension ClashCtl {
       } else {
         throw ValidationError("invalid UUID: \(id)")
       }
-      let response = try await ClashCtl.client.rawResponse(req)
+      let response = try await ServerOptions.client.rawResponse(req)
       print("status:", response.response.status.code)
     }
   }
 
   struct Proxy: AsyncParsableCommand {
+
+    @OptionGroup
+    var options: ServerOptions
 
     @Flag
     var all: Bool = false
@@ -157,11 +185,11 @@ extension ClashCtl {
 
     func run() async throws {
       if let name = name {
-        let res = try await ClashCtl.client.response(GetProxyInfo(name: name)).body.get()
+        let res = try await ServerOptions.client.response(GetProxyInfo(name: name)).body.get()
         logProxy(res, name: name)
       } else {
         print("Get all proxies")
-        let res = try await ClashCtl.client.response(GetAllProxies()).body.get()
+        let res = try await ServerOptions.client.response(GetAllProxies()).body.get()
         res.proxies.sorted(by: { l, r in
           if l.value.type == r.value.type {
             return l.key < r.key
@@ -182,6 +210,9 @@ extension ClashCtl {
 
   struct Test: AsyncParsableCommand {
 
+    @OptionGroup
+    var options: ServerOptions
+
     @Argument
     var name: String
 
@@ -192,12 +223,15 @@ extension ClashCtl {
     var url: String
 
     func run() async throws {
-      let res = try await ClashCtl.client.response(GetProxyDelay(name: name, timeout: timeout, url: url)).body
+      let res = try await ServerOptions.client.response(GetProxyDelay(name: name, timeout: timeout, url: url)).body
       print(res)
     }
   }
 
   struct Select: AsyncParsableCommand {
+
+    @OptionGroup
+    var options: ServerOptions
 
     @Argument
     var group: String
@@ -206,20 +240,24 @@ extension ClashCtl {
     var selection: String
 
     func run() async throws {
-      let response = try await ClashCtl.client.rawResponse(ChangeSelection(newSelection: selection, groupName: group))
+      let response = try await ServerOptions.client.rawResponse(ChangeSelection(newSelection: selection, groupName: group))
       print("status:", response.response.status.code)
     }
   }
 
   struct Reload: AsyncParsableCommand {
 
+    @OptionGroup
+    var options: ServerOptions
+
     @Argument
     var path: String
 
     func run() async throws {
       let endpoint = ReloadConfigs(force: false, body: .init(path: path))
-      let response = try await ClashCtl.client.rawResponse(endpoint)
-      try endpoint.validate(networking: ClashCtl.client, response: response)
+      let response = try await ServerOptions.client.rawResponse(endpoint)
+      try endpoint.validate(networking: ServerOptions.client, response: response)
+      print("OK")
     }
   }
 }

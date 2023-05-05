@@ -2,6 +2,9 @@ import Foundation
 import NIO
 import NIOHTTP1
 import Networking
+#if canImport(FoundationNetworking)
+import FoundationNetworking
+#endif
 
 public struct ClashAPIClient: URLSessionNetworking {
 
